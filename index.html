@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>امتحان المستوى الأول - Arduino Academy</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Tajawal',sans-serif;background:#f0f2f5;color:#1e293b;min-height:100vh;}
+        .page{display:none;min-height:100vh;}
+        .page.active{display:block;}
+
+        /* ===== PAGE 1: Registration ===== */
+        .reg-page{display:none;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 50%,#7c3aed 100%);padding:20px;}
+        .reg-page.active{display:flex;}
+        .reg-card{background:white;border-radius:24px;padding:50px;max-width:550px;width:100%;box-shadow:0 25px 60px rgba(0,0,0,0.3);text-align:center;}
+        .reg-card h1{font-size:2.2em;color:#1e3a5f;margin-bottom:5px;}
+        .reg-card .academy{color:#2563eb;font-size:1.1em;font-weight:700;margin-bottom:25px;}
+        .reg-card .subtitle{color:#64748b;font-size:1.1em;margin-bottom:30px;}
+        .form-group{margin-bottom:20px;text-align:right;}
+        .form-group label{display:block;font-weight:700;margin-bottom:8px;color:#334155;font-size:1.1em;}
+        .form-group input{width:100%;padding:14px 18px;border:2px solid #e2e8f0;border-radius:12px;font-size:1.1em;font-family:'Tajawal',sans-serif;transition:all 0.3s;}
+        .form-group input:focus{outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,0.1);}
+        .form-group input[readonly]{background:#f1f5f9;color:#64748b;}
+        .start-btn{background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;padding:16px 50px;border-radius:50px;font-size:1.3em;font-weight:800;cursor:pointer;margin-top:20px;font-family:'Tajawal',sans-serif;box-shadow:0 10px 30px rgba(37,99,235,0.3);transition:all 0.3s;}
+        .start-btn:hover{transform:translateY(-3px);box-shadow:0 15px 40px rgba(37,99,235,0.4);}
+        .logo-emoji{font-size:4em;margin-bottom:15px;}
+
+        /* ===== PAGE 2: Exam ===== */
+        .exam-page{display:none;min-height:100vh;background:#f0f2f5;}
+        .exam-page.active{display:block;}
+        .exam-header{background:white;padding:15px 30px;box-shadow:0 4px 15px rgba(0,0,0,0.1);position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
+        .student-info{display:flex;gap:20px;align-items:center;flex-wrap:wrap;}
+        .student-info span{background:#f1f5f9;padding:8px 16px;border-radius:10px;font-weight:700;font-size:0.95em;color:#334155;}
+        .timer-box{background:linear-gradient(135deg,#dc2626,#ef4444);color:white;padding:12px 25px;border-radius:15px;font-size:1.4em;font-weight:900;font-family:'Courier New',monospace;direction:ltr;min-width:120px;text-align:center;}
+        .timer-box.warning{animation:timerPulse 1s infinite;}
+        @keyframes timerPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
+        .exam-body{display:flex;gap:0;min-height:calc(100vh - 80px);}
+        .sidebar{width:280px;background:white;padding:20px;box-shadow:4px 0 15px rgba(0,0,0,0.05);overflow-y:auto;position:sticky;top:80px;height:calc(100vh - 80px);flex-shrink:0;}
+        .sidebar h3{font-size:1.2em;color:#334155;margin-bottom:15px;text-align:center;}
+        .q-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+        .q-dot{width:100%;aspect-ratio:1;border-radius:10px;border:2px solid #e2e8f0;background:white;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.9em;cursor:pointer;transition:all 0.3s;color:#64748b;}
+        .q-dot:hover{border-color:#2563eb;transform:scale(1.1);}
+        .q-dot.answered-correct{background:#16a34a;color:white;border-color:#16a34a;}
+        .q-dot.answered-wrong{background:#dc2626;color:white;border-color:#dc2626;}
+        .q-dot.current{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,0.3);}
+        .sidebar-legend{margin-top:20px;padding-top:15px;border-top:2px solid #e2e8f0;}
+        .legend-item{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:0.95em;}
+        .legend-color{width:20px;height:20px;border-radius:5px;}
+        .legend-color.green{background:#16a34a;}
+        .legend-color.red{background:#dc2626;}
+        .legend-color.white{background:white;border:2px solid #e2e8f0;}
+        .progress-info{margin-top:15px;padding:12px;background:#f1f5f9;border-radius:10px;text-align:center;font-weight:700;color:#334155;}
+        .progress-info .num{font-size:1.5em;color:#2563eb;display:block;margin-bottom:5px;}
+        .submit-btn{width:100%;margin-top:15px;padding:14px;background:linear-gradient(135deg,#16a34a,#15803d);color:white;border:none;border-radius:12px;font-size:1.2em;font-weight:800;cursor:pointer;font-family:'Tajawal',sans-serif;transition:all 0.3s;}
+        .submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(22,163,74,0.3);}
+        .questions-area{flex:1;padding:30px;overflow-y:auto;}
+        .question-card{background:white;border-radius:20px;padding:35px;margin-bottom:25px;box-shadow:0 4px 15px rgba(0,0,0,0.05);border:2px solid transparent;transition:all 0.3s;}
+        .question-card.highlight{border-color:#f59e0b;box-shadow:0 0 0 3px rgba(245,158,11,0.2);}
+        .q-number{display:inline-block;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;width:40px;height:40px;border-radius:50%;text-align:center;line-height:40px;font-weight:800;font-size:1.1em;margin-left:12px;}
+        .q-text{font-size:1.25em;font-weight:700;color:#1e293b;display:inline;line-height:1.8;}
+        .q-category{display:inline-block;background:#f1f5f9;color:#64748b;padding:4px 12px;border-radius:20px;font-size:0.85em;font-weight:600;margin-top:10px;margin-bottom:15px;}
+        .options{display:grid;gap:12px;margin-top:15px;}
+        .option{background:#f8fafc;border:2px solid #e2e8f0;border-radius:14px;padding:16px 20px;cursor:pointer;transition:all 0.3s;display:flex;align-items:center;gap:12px;font-size:1.1em;}
+        .option:hover{border-color:#2563eb;background:#eff6ff;}
+        .option.selected{border-color:#2563eb;background:#dbeafe;font-weight:700;}
+        .option .opt-letter{width:35px;height:35px;border-radius:50%;background:#e2e8f0;display:flex;align-items:center;justify-content:center;font-weight:800;color:#64748b;flex-shrink:0;}
+        .option.selected .opt-letter{background:#2563eb;color:white;}
+
+        /* ===== PAGE 3: Results ===== */
+        .result-page{display:none;min-height:100vh;background:linear-gradient(135deg,#f0f2f5 0%,#e0e7ff 100%);padding:30px;}
+        .result-page.active{display:block;}
+        .result-header{background:white;border-radius:24px;padding:40px;max-width:1000px;margin:0 auto 30px;box-shadow:0 10px 40px rgba(0,0,0,0.1);text-align:center;}
+        .result-header h1{font-size:2.5em;color:#1e3a5f;margin-bottom:10px;}
+        .score-circle{width:180px;height:180px;border-radius:50%;margin:25px auto;display:flex;flex-direction:column;align-items:center;justify-content:center;border:8px solid;font-size:3.5em;font-weight:900;}
+        .score-circle.excellent{border-color:#16a34a;color:#16a34a;background:#dcfce7;}
+        .score-circle.good{border-color:#2563eb;color:#2563eb;background:#dbeafe;}
+        .score-circle.average{border-color:#f59e0b;color:#f59e0b;background:#fef3c7;}
+        .score-circle.poor{border-color:#dc2626;color:#dc2626;background:#fee2e2;}
+        .score-label{font-size:0.35em;font-weight:700;margin-top:5px;}
+        .result-details{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-top:25px;}
+        .result-detail{background:#f8fafc;padding:15px;border-radius:12px;text-align:center;}
+        .result-detail .label{color:#64748b;font-size:0.95em;margin-bottom:5px;}
+        .result-detail .value{font-size:1.4em;font-weight:800;color:#1e293b;}
+        .result-answers{max-width:1000px;margin:0 auto;}
+        .result-answers h2{font-size:1.8em;color:#1e3a5f;margin-bottom:20px;text-align:center;}
+        .result-q{background:white;border-radius:16px;padding:25px;margin-bottom:15px;box-shadow:0 3px 10px rgba(0,0,0,0.05);border-right:5px solid;}
+        .result-q.correct{border-right-color:#16a34a;}
+        .result-q.wrong{border-right-color:#dc2626;}
+        .result-q .rq-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
+        .result-q .rq-num{background:#1e3a5f;color:white;width:35px;height:35px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.95em;flex-shrink:0;}
+        .result-q .rq-status{padding:5px 15px;border-radius:20px;font-weight:700;font-size:0.9em;color:white;}
+        .result-q .rq-status.correct{background:#16a34a;}
+        .result-q .rq-status.wrong{background:#dc2626;}
+        .result-q .rq-text{font-size:1.15em;font-weight:700;margin-bottom:12px;color:#1e293b;}
+        .result-q .rq-options{display:grid;gap:8px;}
+        .result-q .rq-opt{padding:10px 15px;border-radius:10px;font-size:1em;display:flex;align-items:center;gap:10px;}
+        .result-q .rq-opt.is-correct{background:#dcfce7;border:2px solid #16a34a;font-weight:700;color:#15803d;}
+        .result-q .rq-opt.is-wrong{background:#fee2e2;border:2px solid #dc2626;font-weight:700;color:#dc2626;text-decoration:line-through;}
+        .result-q .rq-opt.normal{background:#f8fafc;border:2px solid #e2e8f0;color:#64748b;}
+        .result-q .rq-explain{margin-top:12px;padding:12px 15px;background:#eff6ff;border-radius:10px;color:#1e40af;font-weight:600;font-size:1em;}
+        .restart-btn{display:block;margin:40px auto;padding:16px 50px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:white;border:none;border-radius:50px;font-size:1.3em;font-weight:800;cursor:pointer;font-family:'Tajawal',sans-serif;box-shadow:0 10px 30px rgba(37,99,235,0.3);transition:all 0.3s;}
+        .restart-btn:hover{transform:translateY(-3px);}
+
+        /* Modal */
+        .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;padding:20px;}
+        .modal-overlay.show{display:flex;}
+        .modal{background:white;border-radius:20px;padding:35px;max-width:500px;width:100%;text-align:center;box-shadow:0 25px 60px rgba(0,0,0,0.3);}
+        .modal h3{font-size:1.5em;color:#dc2626;margin-bottom:15px;}
+        .modal p{font-size:1.1em;color:#475569;margin-bottom:20px;line-height:1.8;}
+        .modal .unanswered-list{background:#fef2f2;padding:15px;border-radius:12px;margin-bottom:20px;max-height:200px;overflow-y:auto;text-align:right;}
+        .modal .unanswered-list span{display:inline-block;background:#dc2626;color:white;padding:5px 12px;border-radius:8px;margin:4px;font-weight:700;font-size:0.9em;}
+        .modal-btns{display:flex;gap:15px;justify-content:center;flex-wrap:wrap;}
+        .modal-btn{padding:12px 30px;border-radius:12px;font-size:1.1em;font-weight:700;cursor:pointer;font-family:'Tajawal',sans-serif;border:none;transition:all 0.3s;}
+        .modal-btn.confirm{background:#16a34a;color:white;}
+        .modal-btn.cancel{background:#e2e8f0;color:#334155;}
+        .modal-btn:hover{transform:translateY(-2px);}
+
+        @media(max-width:900px){
+            .exam-body{flex-direction:column;}
+            .sidebar{width:100%;position:relative;top:0;height:auto;max-height:300px;}
+            .q-grid{grid-template-columns:repeat(10,1fr);}
+            .exam-header{flex-direction:column;text-align:center;}
+            .student-info{justify-content:center;}
+        }
+        @media(max-width:600px){
+            .q-grid{grid-template-columns:repeat(5,1fr);}
+            .reg-card{padding:30px;}
+            .result-details{grid-template-columns:1fr 1fr;}
+        }
+    </style>
+</head>
+<body>
+
+<!-- ==================== PAGE 1: Registration ==================== -->
+<div class="reg-page active" id="regPage">
+    <div class="reg-card">
+        <div class="logo-emoji">🎓</div>
+        <h1>Arduino Academy</h1>
+        <div class="academy">أكاديمية الأردوينو</div>
+        <div class="subtitle">امتحان المستوى الأول - 100 سؤال | 60 دقيقة</div>
+        <div class="form-group">
+            <label>👤 الاسم الكامل:</label>
+            <input type="text" id="studentName" placeholder="اكتب اسمك هنا...">
+        </div>
+        <div class="form-group">
+            <label>🎂 العمر:</label>
+            <input type="number" id="studentAge" placeholder="اكتب عمرك..." min="7" max="18">
+        </div>
+        <div class="form-group">
+            <label>📅 التاريخ:</label>
+            <input type="text" id="examDate" readonly>
+        </div>
+        <button class="start-btn" onclick="startExam()">🚀 ابدأ الامتحان</button>
+    </div>
+</div>
+
+<!-- ==================== PAGE 2: Exam ==================== -->
+<div class="exam-page" id="examPage">
+    <div class="exam-header">
+        <div class="student-info">
+            <span>👤 <span id="dispName"></span></span>
+            <span>🎂 <span id="dispAge"></span> سنة</span>
+            <span>📅 <span id="dispDate"></span></span>
+            <span>📚 المستوى الأول</span>
+        </div>
+        <div class="timer-box" id="timerBox">60:00</div>
+    </div>
+    <div class="exam-body">
+        <div class="sidebar">
+            <h3>📋 خريطة الأسئلة</h3>
+            <div class="q-grid" id="qGrid"></div>
+            <div class="progress-info">
+                <span class="num" id="progressNum">0 / 100</span>
+                تم الإجابة
+            </div>
+            <div class="sidebar-legend">
+                <div class="legend-item"><div class="legend-color green"></div> إجابة صحيحة</div>
+                <div class="legend-item"><div class="legend-color red"></div> إجابة خاطئة</div>
+                <div class="legend-item"><div class="legend-color white"></div> لم تُجب</div>
+            </div>
+            <button class="submit-btn" onclick="trySubmit()">📤 تسليم الورقة</button>
+        </div>
+        <div class="questions-area" id="questionsArea"></div>
+    </div>
+</div>
+
+<!-- ==================== PAGE 3: Results ==================== -->
+<div class="result-page" id="resultPage">
+    <div class="result-header">
+        <h1>📊 نتيجة الامتحان</h1>
+        <div class="score-circle" id="scoreCircle">
+            <span id="scoreNum">0</span>
+            <div class="score-label">من 100</div>
+        </div>
+        <div class="result-details">
+            <div class="result-detail"><div class="label">👤 الاسم</div><div class="value" id="resName"></div></div>
+            <div class="result-detail"><div class="label">🎂 العمر</div><div class="value" id="resAge"></div></div>
+            <div class="result-detail"><div class="label">📅 التاريخ</div><div class="value" id="resDate"></div></div>
+            <div class="result-detail"><div class="label">📚 المادة</div><div class="value">Arduino L1</div></div>
+            <div class="result-detail"><div class="label">✅ صحيح</div><div class="value" id="resCorrect" style="color:#16a34a;"></div></div>
+            <div class="result-detail"><div class="label">❌ خطأ</div><div class="value" id="resWrong" style="color:#dc2626;"></div></div>
+        </div>
+    </div>
+    <div class="result-answers">
+        <h2>📝 مراجعة الإجابات</h2>
+        <div id="resultAnswers"></div>
+    </div>
+    <button class="restart-btn" onclick="location.reload()">🔄 إعادة الامتحان</button>
+</div>
+
+<!-- ==================== Modal ==================== -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+        <h3>⚠️ تنبيه!</h3>
+        <p>أنت لم تُجب على الأسئلة التالية:</p>
+        <div class="unanswered-list" id="unansweredList"></div>
+        <p>هل تريد التسليم على أي حال؟</p>
+        <div class="modal-btns">
+            <button class="modal-btn confirm" onclick="submitExam()">✅ نعم، سلّم</button>
+            <button class="modal-btn cancel" onclick="closeModal()">❌ لا، أكمل</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== QUESTIONS DATA (100 Questions - No PIR) ====================
+const questions = [
+// ===== المحاضرة 1: Blink LED (7 أسئلة) =====
+{id:1,cat:"Blink LED",q:"ما هو الأردوينو؟",opts:["لعبة فيديو","لوحة إلكترونية ذكية قابلة للبرمجة","هاتف محمول","شاشة تلفزيون"],correct:1,explain:"الأردوينو لوحة إلكترونية ذكية يمكن برمجتها لتنفيذ أوامر"},
+{id:2,cat:"Blink LED",q:"ما هو عقل الأردوينو؟",opts:["USB Port","Power Jack","Microcontroller","Digital Pins"],correct:2,explain:"Microcontroller هو الشريحة السوداء في المنتصف"},
+{id:3,cat:"Blink LED",q:"ما رقم الـ Pin اللي فيه LED داخلي؟",opts:["Pin 9","Pin 10","Pin 13","Pin 8"],correct:2,explain:"الـ LED الداخلي متصل بـ Pin 13"},
+{id:4,cat:"Blink LED",q:"ماذا تعني HIGH في الأردوينو؟",opts:["إيقاف","تشغيل","انتظار","قراءة"],correct:1,explain:"HIGH تعني تشغيل (إرسال كهرباء)"},
+{id:5,cat:"Blink LED",q:"delay(1000) تعني إيه؟",opts:["انتظار 10 ثواني","انتظار ثانية واحدة","انتظار دقيقة","انتظار نص ثانية"],correct:1,explain:"1000 ملي ثانية = ثانية واحدة"},
+{id:6,cat:"Blink LED",q:"أي دالة تتكرر باستمرار؟",opts:["setup()","loop()","pinMode()","delay()"],correct:1,explain:"loop() تتكرر باستمرار طوال تشغيل الأردوينو"},
+{id:7,cat:"Blink LED",q:"أي دالة تعمل مرة واحدة فقط؟",opts:["loop()","delay()","setup()","digitalWrite()"],correct:2,explain:"setup() تعمل مرة واحدة عند تشغيل الأردوينو"},
+
+// ===== المحاضرة 2: External LED (7 أسئلة) =====
+{id:8,cat:"External LED",q:"ليه بنستخدم المقاومة مع الـ LED الخارجي؟",opts:["عشان نزيد الإضاءة","عشان نحمي الـ LED من الاحتراق","عشان نغير اللون","عشان نطفي اللمبة"],correct:1,explain:"المقاومة بتحمي الـ LED من التيار العالي"},
+{id:9,cat:"External LED",q:"إزاي نعرف الطرف الموجب في الـ LED؟",opts:["الطرف الأقصر","الطرف الأطول","مفيش فرق","الطرف الأوسط"],correct:1,explain:"الطرف الأطول هو الموجب (Anode)"},
+{id:10,cat:"External LED",q:"ما هي وظيفة الـ Breadboard؟",opts:["تخزين الكهرباء","توصيل المكونات من غير لحام","قياس الجهد","تشغيل الأردوينو"],correct:1,explain:"Breadboard لوحة تجارب للتوصيل من غير لحام"},
+{id:11,cat:"External LED",q:"كم قيمة المقاومة اللي بنستخدمها مع LED؟",opts:["10Ω","220Ω","1000Ω","1MΩ"],correct:1,explain:"بنستخدم 220Ω أو 330Ω لحماية الـ LED"},
+{id:12,cat:"External LED",q:"Pin 13 مختلف عن باقي الـ Pins ليه؟",opts:["فيه مقاومة داخلية و LED داخلي","أكبر في الحجم","أسرع في الاستجابة","بيشتغل بـ 12 فولت"],correct:0,explain:"Pin 13 فيه مقاومة داخلية و LED داخلي"},
+{id:13,cat:"External LED",q:"الطرف القصير في LED اسمه إيه؟",opts:["Anode","Cathode","Base","Gate"],correct:1,explain:"الطرف القصير هو السالب (Cathode)"},
+{id:14,cat:"External LED",q:"لو عكست أطراف LED هيحصل إيه؟",opts:["هيشتغل عادي","هينفجر","مش هيشتغل","هيغير لونه"],correct:2,explain:"LED مش هيشتغل لو الأطراف معكوسة"},
+
+// ===== المحاضرة 3: Push Button (7 أسئلة) =====
+{id:15,cat:"Push Button",q:"ما هو Input في الأردوينو؟",opts:["معلومة تخرج من الأردوينو","معلومة تدخل إلى الأردوينو","كود برمجي","سلك توصيل"],correct:1,explain:"Input يعني معلومة تدخل إلى الأردوينو"},
+{id:16,cat:"Push Button",q:"ما وظيفة digitalRead()؟",opts:["تشغيل LED","قراءة حالة الزر","إيقاف الأردوينو","تغيير اللون"],correct:1,explain:"digitalRead() بتقرأ حالة الزر"},
+{id:17,cat:"Push Button",q:"ماذا تفعل if في الكود؟",opts:["تكرر الأمر","تنفذ أمر إذا تحقق شرط","توقف البرنامج","تشغل الأردوينو"],correct:1,explain:"if بتنفذ أمر لو الشرط صح"},
+{id:18,cat:"Push Button",q:"هل الزر (Push Button) Input ولا Output؟",opts:["Input","Output","كلاهما","لا شيء"],correct:0,explain:"الزر Input لأنه بيدخل معلومة للأردوينو"},
+{id:19,cat:"Push Button",q:"INPUT_PULLUP معناها إيه؟",opts:["مقاومة داخلية مدمجة","تشغيل LED","قراءة Analog","إيقاف الزر"],correct:0,explain:"INPUT_PULLUP بتفعل مقاومة داخلية"},
+{id:20,cat:"Push Button",q:"ماذا تفعل else في الكود؟",opts:["تنفذ أمر لو الشرط غلط","تكرر الأمر","توقف البرنامج","تشغل LED"],correct:0,explain:"else بتنفذ أمر لو شرط if غلط"},
+{id:21,cat:"Push Button",q:"هل LED Input ولا Output؟",opts:["Input","Output","كلاهما","لا شيء"],correct:1,explain:"LED هو Output لأنه بيطلع ضوء"},
+
+// ===== المحاضرة 4: RGB LED (7 أسئلة) =====
+{id:22,cat:"RGB LED",q:"ماذا تعني RGB؟",opts:["Red Green Blue","Real Great Bright","Right Go Back","Run Get Build"],correct:0,explain:"RGB = Red (أحمر) Green (أخضر) Blue (أزرق)"},
+{id:23,cat:"RGB LED",q:"كم لون داخل RGB LED؟",opts:["1","2","3","4"],correct:2,explain:"فيه 3 ألوان: أحمر وأخضر وأزرق"},
+{id:24,cat:"RGB LED",q:"أحمر + أخضر = ؟",opts:["أزرق","بنفسجي","أصفر","أبيض"],correct:2,explain:"أحمر + أخضر = أصفر"},
+{id:25,cat:"RGB LED",q:"الأحمر + الأخضر + الأزرق = ؟",opts:["أسود","رمادي","أبيض","بنفسجي"],correct:2,explain:"الـ 3 ألوان مع بعض = أبيض"},
+{id:26,cat:"RGB LED",q:"هل RGB LED Input ولا Output؟",opts:["Input","Output","كلاهما","لا شيء"],correct:1,explain:"RGB LED هو Output"},
+{id:27,cat:"RGB LED",q:"أحمر + أزرق = ؟",opts:["أصفر","بنفسجي","سماوي","أبيض"],correct:1,explain:"أحمر + أزرق = بنفسجي"},
+{id:28,cat:"RGB LED",q:"أخضر + أزرق = ؟",opts:["أصفر","بنفسجي","سماوي","أبيض"],correct:2,explain:"أخضر + أزرق = سماوي (Cyan)"},
+
+// ===== المحاضرة 5: 7 Segment (7 أسئلة) =====
+{id:29,cat:"7 Segment",q:"كام LED جوا الـ 7 Segment؟",opts:["5","6","7","8"],correct:2,explain:"فيه 7 LEDs + نقطة عشرية"},
+{id:30,cat:"7 Segment",q:"عشان نعرض الرقم 1، بنشغل إيه؟",opts:["A و B","B و C","C و D","كل الـ LEDs"],correct:1,explain:"الرقم 1 بنشغل فيه B و C بس"},
+{id:31,cat:"7 Segment",q:"عشان نعرض الرقم 8، بنشغل إيه؟",opts:["A و B بس","B و C و D","كل الـ 7 LEDs","G بس"],correct:2,explain:"الرقم 8 بنشغل فيه كل الـ 7 LEDs"},
+{id:32,cat:"7 Segment",q:"إيه أسماء الـ segments؟",opts:["1,2,3,4,5,6,7","A,B,C,D,E,F,G","X,Y,Z,W,V,U,T","R,G,B,Y,W,O,P"],correct:1,explain:"أسماء الـ segments هي A, B, C, D, E, F, G"},
+{id:33,cat:"7 Segment",q:"هل 7 Segment Input ولا Output؟",opts:["Input","Output","كلاهما","لا شيء"],correct:1,explain:"7 Segment هو Output لأنه بيطلع ضوء"},
+{id:34,cat:"7 Segment",q:"عشان نعرض الرقم 0، بنطفي إيه؟",opts:["A","B","G","D"],correct:2,explain:"الرقم 0 بنطفي فيه G بس"},
+{id:35,cat:"7 Segment",q:"كل segment محتاج إيه للحماية؟",opts:["LED","مقاومة 220Ω","زر","بطارية"],correct:1,explain:"كل segment محتاج مقاومة 220Ω"},
+
+// ===== المحاضرة 6: Arrays + For Loop (7 أسئلة) =====
+{id:36,cat:"Arrays & For Loop",q:"ما هو Array؟",opts:["نوع من الـ LEDs","صندوق فيه أماكن كتير","دالة في الأردوينو","سلك توصيل"],correct:1,explain:"Array زي صندوق فيه أماكن كتير للبيانات"},
+{id:37,cat:"Arrays & For Loop",q:"أول مكان في Array رقمه كام؟",opts:["1","0","2","-1"],correct:1,explain:"الأرقام في Array بتبدأ من 0"},
+{id:38,cat:"Arrays & For Loop",q:"ما هو For Loop؟",opts:["نوع من الـ LEDs","نكرر أمر كام مرة","دالة لقراءة الضوء","حساس مسافة"],correct:1,explain:"For Loop معناها نكرر أمر عدد محدد من المرات"},
+{id:39,cat:"Arrays & For Loop",q:"for(int i=0; i<5; i++) هتكرر كام مرة؟",opts:["4","5","6","3"],correct:1,explain:"هتكرر 5 مرات (0,1,2,3,4)"},
+{id:40,cat:"Arrays & For Loop",q:"فايدة Array + For Loop؟",opts:["تزيد حجم الكود","كود أقصر وأنظف","تبطئ الأردوينو","تحرق الـ LED"],correct:1,explain:"Array + For Loop بيخلوا الكود أقصر وأنظف"},
+{id:41,cat:"Arrays & For Loop",q:"pins[3] معناه إيه؟",opts:["الـ Pin رقم 3","المكان الرابع في الـ Array","الـ Pin رقم 4","المكان الثالث"],correct:1,explain:"pins[3] = المكان الرابع (لأن العد من 0)"},
+{id:42,cat:"Arrays & For Loop",q:"i++ معناها إيه؟",opts:["طرح 1","ضرب 2","إضافة 1","قسمة 2"],correct:2,explain:"i++ معناها زوّد i بـ 1"},
+
+// ===== المحاضرة 7: Ultrasonic (7 أسئلة) =====
+{id:43,cat:"Ultrasonic",q:"ما هو Ultrasonic Sensor؟",opts:["حساس حرارة","حساس بيقيس المسافة بالموجات الصوتية","حساس ضوء","حساس صوت"],correct:1,explain:"Ultrasonic بيقيس المسافة باستخدام الموجات فوق الصوتية"},
+{id:44,cat:"Ultrasonic",q:"كام رجل في HC-SR04؟",opts:["2","3","4","5"],correct:2,explain:"فيه 4 أرجل: VCC, TRIG, ECHO, GND"},
+{id:45,cat:"Ultrasonic",q:"ليه نقسم على 2 في معادلة المسافة؟",opts:["عشان نقسم النتيجة","لأن الصوت راح ورجع","عشان نبطئ الحساب","قاعدة رياضية"],correct:1,explain:"لأن الصوت راح للجسم ورجع"},
+{id:46,cat:"Ultrasonic",q:"ما وظيفة pulseIn()؟",opts:["تشغيل LED","قراءة الزر","حساب الوقت","إيقاف البرنامج"],correct:2,explain:"pulseIn() بتحسب الوقت اللي الصوت اخده"},
+{id:47,cat:"Ultrasonic",q:"TRIG وظيفته إيه؟",opts:["يستقبل الصوت","يبعت إشارة الصوت","يشغل الأردوينو","يقيس الحرارة"],correct:1,explain:"TRIG بيبعت إشارة الصوت (Trigger)"},
+{id:48,cat:"Ultrasonic",q:"ECHO وظيفته إيه؟",opts:["يبعت الصوت","يستقبل الصوت المرتد","يشغل LED","يقيس الضوء"],correct:1,explain:"ECHO بيستقبل الصوت المرتد"},
+{id:49,cat:"Ultrasonic",q:"HC-SR04 بيقيس إيه؟",opts:["الحرارة","الضوء","المسافة","الصوت"],correct:2,explain:"HC-SR04 بيقيس المسافة"},
+
+// ===== المحاضرة 8: LDR (7 أسئلة) =====
+{id:50,cat:"LDR",q:"ما هو LDR؟",opts:["LED كبير","مقاومة بتتغير حسب الضوء","حساس حرارة","زر ضغط"],correct:1,explain:"LDR = Light Dependent Resistor"},
+{id:51,cat:"LDR",q:"لما النور يزيد، المقاومة؟",opts:["بتزيد","بتقل","مش بتتغير","بتختفي"],correct:1,explain:"كل ما النور يزيد، المقاومة تقل"},
+{id:52,cat:"LDR",q:"إزاي بنقرأ من LDR؟",opts:["digitalRead()","analogRead()","pinMode()","delay()"],correct:1,explain:"بنستخدم analogRead() للقيم التناظرية"},
+{id:53,cat:"LDR",q:"قيمة analogRead بتكون بين كام؟",opts:["0 و 100","0 و 255","0 و 1023","0 و 5"],correct:2,explain:"analogRead بتدي قيم من 0 إلى 1023"},
+{id:54,cat:"LDR",q:"الفرق بين Analog و Digital؟",opts:["مفيش فرق","Analog = قيم كتير، Digital = 0 أو 1","Digital = قيم كتير، Analog = 0 أو 1","كلاهما قيم كتير"],correct:1,explain:"Analog فيه قيم كتير، Digital فيه حالتين بس"},
+{id:55,cat:"LDR",q:"لما الظلام يزيد، المقاومة؟",opts:["بتقل","بتزيد","مش بتتغير","بتختفي"],correct:1,explain:"كل ما الظلام يزيد، المقاومة تزيد"},
+{id:56,cat:"LDR",q:"LDR بيستخدم في إيه؟",opts:["قياس المسافة","قياس الضوء","قياس الحرارة","قياس الصوت"],correct:1,explain:"LDR بيستخدم لقياس شدة الضوء"},
+
+// ===== المحاضرة 9: LED Matrix (7 أسئلة) =====
+{id:57,cat:"LED Matrix",q:"ما هو LED Matrix؟",opts:["LED واحد كبير","شبكة من LEDs في صفوف وأعمدة","حساس ضوء","موتور"],correct:1,explain:"LED Matrix هو شبكة من LEDs مرتبة في صفوف وأعمدة"},
+{id:58,cat:"LED Matrix",q:"الحجم الأشهر لـ LED Matrix؟",opts:["4×4","6×6","8×8","10×10"],correct:2,explain:"الأشهر هو 8×8 (64 LED)"},
+{id:59,cat:"LED Matrix",q:"ليه بنستخدم MAX7219؟",opts:["عشان نزيد عدد الـ LEDs","بيختصر التوصيل (3 أسلاك بس)","عشان نغير اللون","عشان نقيس المسافة"],correct:1,explain:"MAX7219 بيختصر التوصيل من 16 سلك إلى 3"},
+{id:60,cat:"LED Matrix",q:"إزاي نشغل LED معين في Matrix؟",opts:["digitalWrite(pin, HIGH)","setLed(0, row, col, true)","analogRead(pin)","pinMode(pin, OUTPUT)"],correct:1,explain:"setLed(0, row, col, true) بتشغل LED في موقع محدد"},
+{id:61,cat:"LED Matrix",q:"إزاي نعمل Animation في Matrix؟",opts:["نغير الألوان","نبدل بين أشكال بـ delay","نزيد السطوع","نطفي الشاشة"],correct:1,explain:"بنبدل بين أشكال مختلفة بـ delay"},
+{id:62,cat:"LED Matrix",q:"8×8 Matrix فيه كام LED؟",opts:["16","32","64","128"],correct:2,explain:"8 × 8 = 64 LED"},
+{id:63,cat:"LED Matrix",q:"مكتبة LedControl بتستخدم في إيه؟",opts:["قراءة الحساسات","التحكم في LED Matrix","تشغيل الموتور","قياس الحرارة"],correct:1,explain:"مكتبة LedControl للتحكم في LED Matrix"},
+
+// ===== المحاضرة 10: Joystick (7 أسئلة) =====
+{id:64,cat:"Joystick",q:"ما هو Joystick؟",opts:["شاشة عرض","عصا تحكم بتتحرك في اتجاهين","حساس حرارة","موتور"],correct:1,explain:"Joystick هو عصا تحكم بمحورين X و Y"},
+{id:65,cat:"Joystick",q:"كام محور في Joystick؟",opts:["1","2","3","4"],correct:1,explain:"فيه محورين: X (أفقي) و Y (رأسي) + زر"},
+{id:66,cat:"Joystick",q:"قيم Joystick بتكون بين كام؟",opts:["0 و 100","0 و 255","0 و 1023","0 و 5"],correct:2,explain:"القيم من 0 إلى 1023"},
+{id:67,cat:"Joystick",q:"القيمة في الوسط تقريباً؟",opts:["0","255","512","1023"],correct:2,explain:"في الوسط القيمة حوالي 512"},
+{id:68,cat:"Joystick",q:"الزر في Joystick بيشتغل بـ؟",opts:["analogRead()","digitalRead() مع INPUT_PULLUP","pinMode()","delay()"],correct:1,explain:"الزر بيشتغل بـ digitalRead() مع INPUT_PULLUP"},
+{id:69,cat:"Joystick",q:"بنستخدم إيه لقراءة X و Y؟",opts:["digitalRead()","analogRead()","pinMode()","pulseIn()"],correct:1,explain:"بنستخدم analogRead() لقراءة المحاور"},
+{id:70,cat:"Joystick",q:"VRx و VRy بيتوصلوا بـ؟",opts:["Digital Pins","Analog Pins","PWM Pins","GND"],correct:1,explain:"VRx و VRy بيتوصلوا بـ Analog Pins (A0, A1)"},
+
+// ===== المحاضرة 11: DC Motor (8 أسئلة) =====
+{id:71,cat:"DC Motor",q:"إيه هو DC Motor؟",opts:["حساس ضوء","محرك تيار مستمر","شاشة عرض","زر ضغط"],correct:1,explain:"DC Motor = محرك تيار مستمر يحول الكهرباء لحركة"},
+{id:72,cat:"DC Motor",q:"ليه مش بنوصله بالأردوينو مباشرة؟",opts:["لأنه كبير","الأردوينو تياره ضعيف","لأنه غالي","مش متوافق"],correct:1,explain:"الأردوينو بيدي 40mA بس والموتور محتاج أكتر"},
+{id:73,cat:"DC Motor",q:"إيه وظيفة L298N؟",opts:["حساس حرارة","وسيط بين الأردوينو والموتور","شاشة عرض","مقاومة"],correct:1,explain:"L298N وسيط بين الأردوينو والموتور"},
+{id:74,cat:"DC Motor",q:"إزاي نتحكم في اتجاه DC Motor؟",opts:["باستخدام ENA","باستخدام IN1 و IN2","باستخدام PWM","باستخدام analogRead"],correct:1,explain:"بنستخدم IN1 و IN2 للتحكم في الاتجاه"},
+{id:75,cat:"DC Motor",q:"إزاي نتحكم في سرعة DC Motor؟",opts:["باستخدام IN1","باستخدام ENA مع PWM","باستخدام digitalRead","باستخدام delay"],correct:1,explain:"بنستخدم ENA مع analogWrite() (PWM)"},
+{id:76,cat:"DC Motor",q:"إيه هي دالة PWM؟",opts:["digitalRead()","analogWrite()","pinMode()","pulseIn()"],correct:1,explain:"analogWrite() بتستخدم PWM للتحكم في السرعة"},
+{id:77,cat:"DC Motor",q:"قيمة analogWrite بتكون بين كام؟",opts:["0 و 1","0 و 100","0 و 255","0 و 1023"],correct:2,explain:"analogWrite بتدي قيم من 0 إلى 255"},
+{id:78,cat:"DC Motor",q:"لو IN1 = HIGH و IN2 = LOW الموتور هيدور إزاي؟",opts:["يمين","شمال","واقف","بين يمين وشمال"],correct:0,explain:"IN1=HIGH و IN2=LOW = دوران في اتجاه"},
+
+// ===== المحاضرة 12: Joystick + LED Matrix (7 أسئلة) =====
+{id:79,cat:"Joystick+Matrix",q:"فكرة مشروع Joystick + Matrix؟",opts:["قياس الحرارة","نقطة تتحرك على Matrix بالـ Joystick","تشغيل موتور","قياس المسافة"],correct:1,explain:"نقطة بتتحرك على الـ Matrix حسب اتجاه الـ Joystick"},
+{id:80,cat:"Joystick+Matrix",q:"متغيرات الموقع في المشروع؟",opts:["x و y","row و col","a و b","HIGH و LOW"],correct:1,explain:"بنستخدم row (الصف) و col (العمود)"},
+{id:81,cat:"Joystick+Matrix",q:"الحدود المسموحة لـ row و col؟",opts:["من 0 إلى 9","من 1 إلى 8","من 0 إلى 7","من -1 إلى 8"],correct:2,explain:"من 0 إلى 7 (لأن Matrix 8×8)"},
+{id:82,cat:"Joystick+Matrix",q:"إزاي نرسم النقطة على Matrix؟",opts:["digitalWrite()","lc.setLed(0, row, col, true)","analogRead()","pinMode()"],correct:1,explain:"lc.setLed(0, row, col, true) بتشغل LED في الموقع"},
+{id:83,cat:"Joystick+Matrix",q:"لو الزر مضغوط في المشروع بيعمل إيه؟",opts:["يطفي الشاشة","يمسح الشاشة أو يغير الشكل","يشغل موتور","يقيس المسافة"],correct:1,explain:"الزر بيمسح الشاشة أو بيغير حجم النقطة"},
+{id:84,cat:"Joystick+Matrix",q:"لو y > 900 النقطة هتتحرك فين؟",opts:["تحت","فوق","يمين","يسار"],correct:1,explain:"y > 900 معناها العصا لفوق"},
+{id:85,cat:"Joystick+Matrix",q:"إيه اللي بيحصل في كل loop؟",opts:["نمسح ونرسم من جديد","نرسم بس","نمسح بس","مفيش تغيير"],correct:0,explain:"بنمسح الشاشة وبنرسم النقطة في مكانها الجديد"},
+
+// ===== المحاضرة 13: Servo Motor (7 أسئلة) =====
+{id:86,cat:"Servo Motor",q:"إيه هو Servo Motor؟",opts:["موتور يدور باستمرار","موتور يتحكم في الزاوية بدقة","حساس ضوء","شاشة عرض"],correct:1,explain:"Servo Motor بيتحرك لزاوية محددة بدقة"},
+{id:87,cat:"Servo Motor",q:"الزوايا المتاحة في Servo Motor؟",opts:["من 0 إلى 90","من 0 إلى 180","من 0 إلى 360","من -90 إلى 90"],correct:1,explain:"من 0° إلى 180°"},
+{id:88,cat:"Servo Motor",q:"كام سلك في Servo Motor؟",opts:["2","3","4","5"],correct:1,explain:"3 أسلاك: Signal, VCC, GND"},
+{id:89,cat:"Servo Motor",q:"المكتبة المستخدمة للـ Servo؟",opts:["LedControl.h","Servo.h","Wire.h","SPI.h"],correct:1,explain:"مكتبة Servo.h جاهزة في Arduino IDE"},
+{id:90,cat:"Servo Motor",q:"أمر تحريك الـ Servo لزاوية؟",opts:["digitalWrite()","myServo.write(angle)","analogRead()","pinMode()"],correct:1,explain:"myServo.write(angle) بتحريك الـ Servo لزاوية"},
+{id:91,cat:"Servo Motor",q:"دالة map() بتعمل إيه؟",opts:["تكرار أمر","تحويل القيم من نطاق لنطاق","قراءة حساس","تشغيل موتور"],correct:1,explain:"map() بتحول القيم من نطاق لنطاق تاني"},
+{id:92,cat:"Servo Motor",q:"الفرق بين DC Motor و Servo؟",opts:["مفيش فرق","DC يدور باستمرار، Servo يتحرك لزاوية محددة","Servo أسرع","DC أدق"],correct:1,explain:"DC Motor يدور باستمرار، Servo يتحرك لزاوية محددة"},
+
+// ===== المحاضرة 14: أساسيات الكهرباء (8 أسئلة) =====
+{id:93,cat:"الكهرباء",q:"إيه هي الكهرباء؟",opts:["نوع من الطاقة النووية","حركة الإلكترونات في السلك","موجة صوتية","ضوء"],correct:1,explain:"الكهرباء = حركة الإلكترونات في السلك"},
+{id:94,cat:"الكهرباء",q:"قانون أوم؟",opts:["V = I + R","V = I × R","V = I / R","V = I - R"],correct:1,explain:"V = I × R (الجهد = التيار × المقاومة)"},
+{id:95,cat:"الكهرباء",q:"وحدة قياس الجهد؟",opts:["أمبير (A)","أوم (Ω)","فولت (V)","واط (W)"],correct:2,explain:"الجهد بيتقاس بالفولت (V)"},
+{id:96,cat:"الكهرباء",q:"وحدة قياس التيار؟",opts:["فولت (V)","أوم (Ω)","أمبير (A)","واط (W)"],correct:2,explain:"التيار بيتقاس بالأمبير (A)"},
+{id:97,cat:"الكهرباء",q:"وحدة قياس المقاومة؟",opts:["فولت (V)","أمبير (A)","واط (W)","أوم (Ω)"],correct:3,explain:"المقاومة بتتقاس بالأوم (Ω)"},
+{id:98,cat:"الكهرباء",q:"DC مختلف عن AC إزاي؟",opts:["مفيش فرق","DC اتجاه واحد، AC بيغير اتجاهه","AC أضعف","DC أخطر"],correct:1,explain:"DC تيار مستمر (اتجاه واحد)، AC متردد"},
+{id:99,cat:"الكهرباء",q:"القدرة الكهربائية = ؟",opts:["P = V + I","P = V × I","P = V / I","P = V - I"],correct:1,explain:"P = V × I (القدرة = الجهد × التيار)"},
+{id:100,cat:"الكهرباء",q:"جهد التشغيل في الأردوينو UNO؟",opts:["3V","5V","9V","12V"],correct:1,explain:"الأردوينو UNO بيشتغل بـ 5V"}
+];
+
+// ==================== STATE ====================
+let studentName = '';
+let studentAge = '';
+let examDate = '';
+let answers = {};
+let timerInterval = null;
+let timeLeft = 3600; // 60 minutes
+
+// ==================== INIT ====================
+window.onload = function() {
+    const now = new Date();
+    const options = {year:'numeric',month:'long',day:'numeric',hour:'2-digit',minute:'2-digit'};
+    document.getElementById('examDate').value = now.toLocaleDateString('ar-EG', options);
+};
+
+// ==================== START EXAM ====================
+function startExam() {
+    studentName = document.getElementById('studentName').value.trim();
+    studentAge = document.getElementById('studentAge').value.trim();
+    examDate = document.getElementById('examDate').value;
+
+    if (!studentName) { alert('من فضلك اكتب اسمك!'); return; }
+    if (!studentAge) { alert('من فضلك اكتب عمرك!'); return; }
+
+    document.getElementById('dispName').textContent = studentName;
+    document.getElementById('dispAge').textContent = studentAge;
+    document.getElementById('dispDate').textContent = examDate;
+
+    document.getElementById('regPage').classList.remove('active');
+    document.getElementById('examPage').classList.add('active');
+
+    buildExam();
+    startTimer();
+}
+
+// ==================== BUILD EXAM ====================
+function buildExam() {
+    const grid = document.getElementById('qGrid');
+    const area = document.getElementById('questionsArea');
+    grid.innerHTML = '';
+    area.innerHTML = '';
+
+    questions.forEach((q, idx) => {
+        // Sidebar dot
+        const dot = document.createElement('div');
+        dot.className = 'q-dot';
+        dot.id = 'dot-' + q.id;
+        dot.textContent = q.id;
+        dot.onclick = function() {
+            document.getElementById('q-' + q.id).scrollIntoView({behavior:'smooth',block:'center'});
+        };
+        grid.appendChild(dot);
+
+        // Question card
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        card.id = 'q-' + q.id;
+
+        let optsHTML = '';
+        const letters = ['A','B','C','D'];
+        q.opts.forEach((opt, oi) => {
+            optsHTML += '<div class="option" id="opt-' + q.id + '-' + oi + '" onclick="selectAnswer(' + q.id + ',' + oi + ')">';
+            optsHTML += '<div class="opt-letter">' + letters[oi] + '</div>';
+            '<br>';
+            optsHTML += '<div>' + opt + '</div>';
+            optsHTML += '</div>';
+        });
+
+        card.innerHTML = '<div><span class="q-number">' + q.id + '</span><span class="q-text">' + q.q + '</span></div>' +
+            '<div class="q-category">📚 ' + q.cat + '</div>' +
+            '<div class="options">' + optsHTML + '</div>';
+        area.appendChild(card);
+    });
+}
+
+// ==================== SELECT ANSWER ====================
+function selectAnswer(qId, optIdx) {
+    const q = questions.find(x => x.id === qId);
+    // Remove previous selection
+    q.opts.forEach((_, oi) => {
+        document.getElementById('opt-' + qId + '-' + oi).classList.remove('selected');
+    });
+    // Add new selection
+    document.getElementById('opt-' + qId + '-' + optIdx).classList.add('selected');
+    answers[qId] = optIdx;
+
+    // Update dot
+    const dot = document.getElementById('dot-' + qId);
+    dot.classList.remove('answered-correct','answered-wrong');
+    if (optIdx === q.correct) {
+        dot.classList.add('answered-correct');
+    } else {
+        dot.classList.add('answered-wrong');
+    }
+
+    // Update progress
+    const answered = Object.keys(answers).length;
+    document.getElementById('progressNum').textContent = answered + ' / 100';
+}
+
+// ==================== TIMER ====================
+function startTimer() {
+    timerInterval = setInterval(function() {
+        timeLeft--;
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            submitExam();
+            return;
+        }
+        const m = Math.floor(timeLeft / 60);
+        const s = timeLeft % 60;
+        const display = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+        document.getElementById('timerBox').textContent = display;
+
+        if (timeLeft <= 300) {
+            document.getElementById('timerBox').classList.add('warning');
+        }
+    }, 1000);
+}
+
+// ==================== SUBMIT ====================
+function trySubmit() {
+    const unanswered = [];
+    questions.forEach(q => {
+        if (answers[q.id] === undefined) unanswered.push(q.id);
+    });
+
+    if (unanswered.length > 0) {
+        const list = document.getElementById('unansweredList');
+        list.innerHTML = '';
+        unanswered.forEach(id => {
+            list.innerHTML += '<span>سؤال ' + id + '</span>';
+        });
+        document.getElementById('modalOverlay').classList.add('show');
+    } else {
+        submitExam();
+    }
+}
+
+function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('show');
+}
+
+function submitExam() {
+    clearInterval(timerInterval);
+    closeModal();
+
+    let correctCount = 0;
+    let wrongCount = 0;
+    const resultHTML = [];
+    const letters = ['A','B','C','D'];
+
+    questions.forEach(q => {
+        const userAns = answers[q.id];
+        const isCorrect = userAns === q.correct;
+        const isAnswered = userAns !== undefined;
+
+        if (isCorrect) correctCount++;
+        else wrongCount++;
+
+        let optsHTML = '';
+        q.opts.forEach((opt, oi) => {
+            let cls = 'normal';
+            if (oi === q.correct) cls = 'is-correct';
+            else if (oi === userAns && !isCorrect) cls = 'is-wrong';
+            optsHTML += '<div class="rq-opt ' + cls + '"><strong>' + letters[oi] + '.</strong> ' + opt + '</div>';
+        });
+
+        resultHTML.push(
+            '<div class="result-q ' + (isCorrect ? 'correct' : 'wrong') + '">' +
+            '<div class="rq-header">' +
+            '<div class="rq-num">' + q.id + '</div>' +
+            '<div class="rq-status ' + (isCorrect ? 'correct' : 'wrong') + '">' + (isCorrect ? '✅ صحيح' : '❌ خطأ') + '</div>' +
+            '<div class="q-category" style="margin:0;">📚 ' + q.cat + '</div>' +
+            '</div>' +
+            '<div class="rq-text">' + q.q + '</div>' +
+            '<div class="rq-options">' + optsHTML + '</div>' +
+            '<div class="rq-explain" style="background:' + (isCorrect ? '#dcfce7;color:#15803d;' : '#eff6ff;color:#1e40af;') + '">💡 ' + q.explain + '</div>' +
+            '</div>'
+        );
+    });
+
+    // Show results
+    document.getElementById('examPage').classList.remove('active');
+    document.getElementById('resultPage').classList.add('active');
+
+    document.getElementById('resName').textContent = studentName;
+    document.getElementById('resAge').textContent = studentAge + ' سنة';
+    document.getElementById('resDate').textContent = examDate;
+    document.getElementById('resCorrect').textContent = correctCount;
+    document.getElementById('resWrong').textContent = wrongCount;
+    document.getElementById('scoreNum').textContent = correctCount;
+
+    const circle = document.getElementById('scoreCircle');
+    circle.className = 'score-circle';
+    if (correctCount >= 85) circle.classList.add('excellent');
+    else if (correctCount >= 65) circle.classList.add('good');
+    else if (correctCount >= 50) circle.classList.add('average');
+    else circle.classList.add('poor');
+
+    document.getElementById('resultAnswers').innerHTML = resultHTML.join('');
+    window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>
